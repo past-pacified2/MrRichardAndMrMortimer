@@ -11,13 +11,14 @@ The app is structured in four distinct layers:
 
 ## Key Decisions
 
-| Decision                  | Choice                               | ADR                                                 |
-| ------------------------- | ------------------------------------ | --------------------------------------------------- |
-| State management          | Composables only, no Pinia           | [ADR-0001](./adr/0001-state-management.md)          |
-| Data fetching and caching | TanStack Query                       | [ADR-0002](./adr/0002-data-fetching-and-caching.md) |
-| Testing strategy          | Vitest + Playwright + axe-core       | [ADR-0003](./adr/0003-testing-strategy.md)          |
-| Styling                   | TailwindCSS v4, no component library | [ADR-0004](./adr/0004-styling-approach.md)          |
-| Routing                   | Vue Router 4, typed route names      | [ADR-0005](./adr/0005-routing-strategy.md)          |
+| Decision                  | Choice                                                       | ADR                                                 |
+| ------------------------- | ------------------------------------------------------------ | --------------------------------------------------- |
+| State management          | Composables only, no Pinia                                   | [ADR-0001](./adr/0001-state-management.md)          |
+| Data fetching and caching | TanStack Query                                               | [ADR-0002](./adr/0002-data-fetching-and-caching.md) |
+| Testing strategy          | Vitest + Playwright + axe-core                               | [ADR-0003](./adr/0003-testing-strategy.md)          |
+| Styling                   | TailwindCSS v4, no component library                         | [ADR-0004](./adr/0004-styling-approach.md)          |
+| Routing                   | Vue Router 4, typed route names                              | [ADR-0005](./adr/0005-routing-strategy.md)          |
+| Security                  | Locked dependency versions, known production gaps documented | [ADR-0006](./adr/0006-security.md)                  |
 
 ## Local Development
 
