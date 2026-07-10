@@ -5,11 +5,9 @@
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
     "noFallthroughCasesInSwitch": true,
-    /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
