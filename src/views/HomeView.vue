@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import CharactersGrid from '@/components/CharactersGrid/index.vue';
+
+defineOptions({
+  name: 'HomeView',
+});
 </script>
 
 <template>

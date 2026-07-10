@@ -9,7 +9,11 @@ import Header from '@/components/Header.vue';
   <Header />
 
   <main class="container mx-auto px-4 py-4 md:px-6 lg:px-8">
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <KeepAlive include="HomeView">
+        <component :is="Component" />
+      </KeepAlive>
+    </RouterView>
   </main>
 
   <Footer class="mt-auto" />
