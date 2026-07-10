@@ -7,7 +7,7 @@ import { RouterView } from 'vue-router';
     <h1>Rick & Morty</h1>
   </header>
 
-  <main>
+  <main class="container block py-4">
     <RouterView />
   </main>
 
