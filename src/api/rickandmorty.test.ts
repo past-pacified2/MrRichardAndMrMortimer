@@ -1,0 +1,114 @@
+import type { Character, CharactersResponse } from '@/types/api';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { API_BASE_URL, ApiError, ApiNotFoundError, fetchCharacter, fetchCharacters } from './rickandmorty';
+
+const mockCharacter: Character = {
+  id: 1,
+  name: 'Rick Sanchez',
+  status: 'Alive',
+  species: 'Human',
+  type: '',
+  gender: 'Male',
+  origin: {
+    name: 'Earth',
+    url: 'https://rickandmortyapi.com/api/location/1',
+  },
+  location: {
+    name: 'Earth',
+    url: 'https://rickandmortyapi.com/api/location/20',
+  },
+  image: 'https://rickandmortyapi.com/api/character/avatar/1.jpeg',
+  episode: ['https://rickandmortyapi.com/api/episode/1'],
+  url: 'https://rickandmortyapi.com/api/character/1',
+  created: '2017-11-04T18:48:46.250Z',
+};
+
+const mockCharactersResponse: CharactersResponse = {
+  info: {
+    count: 826,
+    pages: 42,
+    next: `${API_BASE_URL}/character/?page=2`,
+    prev: null,
+  },
+  results: [mockCharacter],
+};
+
+function mockFetchResponse(body: unknown, init: ResponseInit = { status: 200 }) {
+  return new Response(JSON.stringify(body), {
+    status: init.status,
+    statusText: init.statusText,
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+describe('fetchCharacters', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetches the first page of characters', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
+
+    const result = await fetchCharacters();
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character`);
+    expect(result).toEqual(mockCharactersResponse);
+  });
+
+  it('throws ApiError when the request fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+    );
+
+    const error = await fetchCharacters().catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({
+      status: 500,
+      message: 'Server error',
+    });
+  });
+});
+
+describe('fetchCharacter', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('fetches a single character by id', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharacter));
+
+    const result = await fetchCharacter(1);
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character/1`);
+    expect(result).toEqual(mockCharacter);
+  });
+
+  it('throws ApiNotFoundError when the character does not exist', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      mockFetchResponse({ error: 'Character not found' }, { status: 404, statusText: 'Not Found' }),
+    );
+
+    const error = await fetchCharacter(99999).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiNotFoundError);
+    expect(error).toMatchObject({
+      status: 404,
+      message: 'Character not found',
+    });
+  });
+
+  it('throws ApiError for other failed responses', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+    );
+
+    const error = await fetchCharacter(1).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({
+      status: 500,
+      message: 'Server error',
+    });
+  });
+});
