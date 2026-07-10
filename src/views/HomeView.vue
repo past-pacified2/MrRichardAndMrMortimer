@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import CharactersGrid from '@/components/CharactersGrid/index.vue';
-import { homePageSeo } from '@/seo/site';
+import { defaultPageSeo } from '@/seo/site';
 import { usePageSeo } from '@/seo/usePageSeo';
 
 defineOptions({
   name: 'HomeView',
 });
 
-usePageSeo(homePageSeo);
+usePageSeo(defaultPageSeo);
 </script>
 
 <template>

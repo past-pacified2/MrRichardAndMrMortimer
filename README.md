@@ -12,16 +12,6 @@ Vue 3 single-page application built against the [Rick and Morty API](https://ric
 - VueUse
 - Vitest + Playwright (+ axe-core for a11y)
 
-## Stack
-
-- Vue 3 + TypeScript
-- Vite
-- Vue Router 4
-- TanStack Query
-- TailwindCSS
-- VueUse
-- Vitest + Playwright (+ axe-core for a11y)
-
 ## Getting started
 
 ```bash

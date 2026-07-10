@@ -1,8 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 import { ApiError, ApiNotFoundError } from '@/api/rickandmorty';
+import { mockCharacter } from '@/test/fixtures/character';
 import CharacterDetail from './index.vue';
-import { mockCharacter } from './test/fixtures';
 
 function mountCharacterDetail(props: Partial<InstanceType<typeof CharacterDetail>['$props']> = {}) {
   return mount(CharacterDetail, {

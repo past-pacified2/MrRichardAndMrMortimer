@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it } from 'vitest';
 import { defineComponent, nextTick } from 'vue';
 import { buildNotFoundPageSeo } from './errorSeo';
-import { homePageSeo } from './site';
+import { defaultPageSeo } from './site';
 import { usePageSeo } from './usePageSeo';
 
 describe('usePageSeo', () => {
@@ -14,7 +14,7 @@ describe('usePageSeo', () => {
   it('does not reset seo when a newer page has already mounted', async () => {
     const PreviousView = defineComponent({
       setup() {
-        usePageSeo(homePageSeo);
+        usePageSeo(defaultPageSeo);
         return () => null;
       },
     });
@@ -27,7 +27,7 @@ describe('usePageSeo', () => {
     });
 
     const previousWrapper = mount(PreviousView);
-    expect(document.title).toBe(homePageSeo.title);
+    expect(document.title).toBe(defaultPageSeo.title);
 
     const nextWrapper = mount(NextView);
     expect(document.title).toBe('Page not found | Mr. Rick & Mr. Mortimer');
@@ -40,6 +40,6 @@ describe('usePageSeo', () => {
     nextWrapper.unmount();
     await nextTick();
 
-    expect(document.title).toBe(homePageSeo.title);
+    expect(document.title).toBe(defaultPageSeo.title);
   });
 });

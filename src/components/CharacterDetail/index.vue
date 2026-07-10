@@ -2,8 +2,8 @@
 import type { Character } from '@/types/api';
 import { computed } from 'vue';
 import { ApiNotFoundError } from '@/api/rickandmorty';
+import ErrorState from '@/components/ErrorState.vue';
 import CharacterProfile from './CharacterProfile.vue';
-import ErrorState from './ErrorState.vue';
 import LoadingState from './LoadingState.vue';
 
 const props = defineProps<{

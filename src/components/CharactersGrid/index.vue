@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import ErrorState from '@/components/ErrorState.vue';
 import { useCharacterNameFilter } from '@/composables/useCharacterNameFilter';
 import { useCharacters } from '@/composables/useCharacters';
 import { buildPageQuery, parseNameQuery, parsePageQuery } from '@/utils/pagination';
 import CharacterCard from './CharacterCard.vue';
-import ErrorState from './ErrorState.vue';
 import LoadingState from './LoadingState.vue';
 import Pagination from './Pagination.vue';
 

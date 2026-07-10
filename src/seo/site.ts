@@ -20,13 +20,3 @@ export const defaultPageSeo = {
   ogImageAlt: `${SITE_NAME} app icon`,
   robots: 'index, follow',
 } as const;
-
-export const homePageSeo = {
-  title: defaultPageSeo.title,
-  description: defaultPageSeo.description,
-  path: defaultPageSeo.path,
-  ogType: defaultPageSeo.ogType,
-  ogImage: defaultPageSeo.ogImage,
-  ogImageAlt: defaultPageSeo.ogImageAlt,
-  robots: defaultPageSeo.robots,
-};

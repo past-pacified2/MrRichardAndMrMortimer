@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mockCharacter } from '@/components/CharacterDetail/test/fixtures';
+import { mockCharacter } from '@/test/fixtures/character';
 import { buildCharacterJsonLd, buildCharacterLoadingPageSeo, buildCharacterPageSeo } from './characterSeo';
 import { absoluteUrl, SITE_NAME } from './site';
 

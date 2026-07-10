@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { createTestQueryClient } from '@/composables/test/renderComposable';
 import { CHARACTER_PREFETCH_HOVER_MS, characterQueryOptions } from '@/composables/useCharacter';
+import { mockCharacter } from '@/test/fixtures/character';
 import CharacterCard from './CharacterCard.vue';
-import { mockCharacter } from './test/fixtures';
 
 function createCharacterRouter() {
   return createRouter({

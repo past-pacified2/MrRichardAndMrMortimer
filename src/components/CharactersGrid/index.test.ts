@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
 import { ApiError } from '@/api/rickandmorty';
 import { createTestQueryClient } from '@/composables/test/renderComposable';
+import { mockCharactersResponse } from '@/test/fixtures/character';
 import CharactersGrid from './index.vue';
-import { mockCharactersResponse } from './test/fixtures';
 
 vi.mock('@/api/rickandmorty', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/api/rickandmorty')>();

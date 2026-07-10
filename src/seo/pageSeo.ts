@@ -13,21 +13,6 @@ export interface PageSeo {
 
 const JSON_LD_ID = 'page-json-ld';
 
-const managedMetaSelectors = [
-  ['name', 'description'],
-  ['name', 'robots'],
-  ['property', 'og:type'],
-  ['property', 'og:title'],
-  ['property', 'og:description'],
-  ['property', 'og:url'],
-  ['property', 'og:image'],
-  ['property', 'og:image:alt'],
-  ['name', 'twitter:title'],
-  ['name', 'twitter:description'],
-  ['name', 'twitter:image'],
-  ['name', 'twitter:image:alt'],
-] as const;
-
 function upsertMeta(attribute: 'name' | 'property', key: string, content: string) {
   let element = document.head.querySelector(`meta[${attribute}="${key}"]`);
 
@@ -102,12 +87,4 @@ export function resetPageSeo(siteUrl: string) {
     },
     siteUrl,
   );
-}
-
-export function removeManagedMetaTags() {
-  for (const [attribute, key] of managedMetaSelectors) {
-    document.head.querySelector(`meta[${attribute}="${key}"]`)?.remove();
-  }
-
-  document.getElementById(JSON_LD_ID)?.remove();
 }

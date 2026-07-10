@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { mockCharacter } from '@/test/fixtures/character';
 import CharacterProfile from './CharacterProfile.vue';
-import { mockCharacter } from './test/fixtures';
 
 describe('characterProfile', () => {
   it('renders character details from props', () => {
@@ -31,12 +31,12 @@ describe('characterProfile', () => {
       props: {
         character: {
           ...mockCharacter,
-          type: "Rick's Toxic Side",
+          type: 'Cronenberg',
         },
       },
     });
 
     expect(wrapper.text()).toContain('Type');
-    expect(wrapper.text()).toContain("Rick's Toxic Side");
+    expect(wrapper.text()).toContain('Cronenberg');
   });
 });

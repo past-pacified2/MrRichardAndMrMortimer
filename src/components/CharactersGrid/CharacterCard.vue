@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import type { Character, CharacterStatus } from '@/types/api';
+import type { Character } from '@/types/api';
 import { useQueryClient } from '@tanstack/vue-query';
 import { computed, onScopeDispose, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { CHARACTER_PREFETCH_HOVER_MS, prefetchCharacter } from '@/composables/useCharacter';
+import { getCharacterStatusClass } from '@/utils/characterStatus';
 import LazyImage from './LazyImage.vue';
 
 const props = defineProps<{
@@ -13,13 +14,7 @@ const props = defineProps<{
 const queryClient = useQueryClient();
 const prefetchTimer = ref<ReturnType<typeof setTimeout> | undefined>();
 
-const statusClasses: Record<CharacterStatus, string> = {
-  Alive: 'bg-green-500/15 text-green-800 dark:text-green-400',
-  Dead: 'bg-red-500/15 text-red-800 dark:text-red-400',
-  unknown: 'bg-violet-500/15 text-violet-800 dark:text-violet-400',
-};
-
-const statusClass = computed(() => statusClasses[props.character.status]);
+const statusClass = computed(() => getCharacterStatusClass(props.character.status));
 
 function clearPrefetchTimer() {
   if (prefetchTimer.value) {
