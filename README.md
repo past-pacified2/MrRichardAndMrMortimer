@@ -35,6 +35,7 @@ npm run dev
 | `npm run test:unit:coverage` | Run unit tests with coverage report              |
 | `npm run test:e2e`           | Run Playwright E2E + a11y tests (requires build) |
 | `npm run test:e2e:ui`        | Open Playwright UI runner                        |
+| `npm run test:a11y`          | Run a11y spec only (requires build)              |
 | `npm run check`              | Lint + format check + unit tests + build         |
 
 ## Docs

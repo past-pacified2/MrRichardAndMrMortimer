@@ -11,23 +11,22 @@ The app needs shared state for UI concerns (current page, name filter) and async
 
 - **Pinia** - the standard Vue 3 store solution
 - **Plain composables** - shared refs defined at module scope
+- **URL query params** - page and filter synced to the address bar
 - **TanStack Query** - manages all async state internally
 
 ## Decision
 
-No Pinia. Use plain composables for UI state and TanStack Query for all async state.
+No Pinia. Use URL query params for list UI state and TanStack Query for all async state.
 
-UI state (page number, search filter) is simple enough to live in a composable with
-module-scoped refs, which behave as singletons across the app without any store overhead:
+Pagination and name filter state live in the URL (`?page=&name=`) so views are bookmarkable
+and back/forward navigation works naturally. `CharactersGrid` reads and writes query params
+via the router; `useCharacterNameFilter` handles debounced input before values are synced.
 
 ```ts
-// composables/useCharacterFilters.ts
-const page = ref(1);
-const nameFilter = ref('');
-
-export function useCharacterFilters() {
-  return { page, nameFilter };
-}
+// CharactersGrid reads list state from the route
+const currentPage = computed(() => parsePageQuery(route.query.page));
+const nameFilter = computed(() => parseNameQuery(route.query.name));
+const { filterInput, debouncedInput } = useCharacterNameFilter(initialName);
 ```
 
 TanStack Query owns loading, error, and data states entirely - leaving nothing meaningful
@@ -39,7 +38,8 @@ for Pinia to manage.
 
 - One fewer dependency
 - No boilerplate (no `defineStore`, no actions, no getters)
-- State logic lives next to the composables that use it
+- Shareable, refresh-safe list URLs
+- State logic lives next to the composables and components that use it
 
 **Traded off:**
 

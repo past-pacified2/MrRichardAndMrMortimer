@@ -11,7 +11,6 @@ The Rick and Morty API is paginated REST. The app needs:
 - Paginated list fetching with no flicker between pages
 - Single character detail fetching
 - Cache that avoids redundant network requests during a session
-- Cache that survives page refresh
 
 Options considered for the API client:
 
@@ -21,19 +20,23 @@ Options considered for the API client:
 Options considered for caching:
 
 - **Hand-rolled Pinia store** - `Map<page, Character[]>` cache, manual TTL with localStorage
-- **TanStack Query** - `@tanstack/vue-query` with persist plugin
+- **TanStack Query** - `@tanstack/vue-query` with optional persist plugin
 
 ## Decision
 
-Use TanStack Query with `@tanstack/query-persist-client-core` and
-`@tanstack/query-sync-storage-persister`.
+Use TanStack Query (`@tanstack/vue-query`) for in-memory session caching. The persist
+plugin was considered for refresh survival but is not wired up in `main.ts` at this stage.
 
 ```ts
 // composables/useCharacters.ts
 return useQuery({
-  queryKey: computed(() => ['characters', page, nameFilter]),
-  queryFn: () => fetchCharacters(page.value, nameFilter.value),
-  staleTime: 1000 * 60 * 5,
+  queryKey: computed(() => ['characters', toValue(page), toValue(name) ?? '']),
+  queryFn: () =>
+    fetchCharacters({
+      page: toValue(page),
+      name: toValue(name),
+    }),
+  staleTime: STALE_TIME_MS,
   placeholderData: keepPreviousData,
 });
 ```
@@ -54,12 +57,11 @@ mouse enter - making the detail page feel instant even on first visit.
 - Automatic request deduplication
 - `staleTime` and `gcTime` replace manual TTL logic
 - `keepPreviousData` eliminates pagination flicker
-- localStorage persistence via plugin, survives refresh
 - Prefetch on hover for instant detail navigation
-- TanStack Query devtools available in development
 
 **Traded off:**
 
+- Cache does not survive a full page refresh without the persist plugin
 - Less fine-grained control over cache writes compared to a hand-rolled store
-- Additional dependencies (~13kb gzipped total)
+- Additional dependency (~13kb gzipped total)
 - Acceptable: the API is entirely read-only, no mutations to coordinate
