@@ -2,6 +2,14 @@ import type { ApiErrorResponse, Character, CharactersResponse } from '@/types/ap
 
 export const API_BASE_URL = 'https://rickandmortyapi.com/api';
 
+const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_RETRY_DELAY_MS = 300;
+
+export interface FetchOptions {
+  maxRetries?: number;
+  retryDelayMs?: number;
+}
+
 export class ApiNotFoundError extends Error {
   readonly status = 404;
 
@@ -19,6 +27,22 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = status;
   }
+}
+
+function isRecoverableError(error: unknown): boolean {
+  if (error instanceof ApiNotFoundError) {
+    return false;
+  }
+
+  if (error instanceof ApiError) {
+    return error.status >= 500;
+  }
+
+  return true;
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -42,12 +66,32 @@ async function handleResponse<T>(response: Response): Promise<T> {
   throw new ApiError(response.status, message);
 }
 
-export async function fetchCharacters(): Promise<CharactersResponse> {
-  const response = await fetch(`${API_BASE_URL}/character`);
-  return handleResponse<CharactersResponse>(response);
+async function fetchWithRetry<T>(url: string, options: FetchOptions = {}): Promise<T> {
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
+  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url);
+      return await handleResponse<T>(response);
+    } catch (error) {
+      const isLastAttempt = attempt === maxRetries;
+
+      if (isLastAttempt || !isRecoverableError(error)) {
+        throw error;
+      }
+
+      await sleep(retryDelayMs * (attempt + 1));
+    }
+  }
+
+  throw new Error('Unreachable');
 }
 
-export async function fetchCharacter(id: number): Promise<Character> {
-  const response = await fetch(`${API_BASE_URL}/character/${id}`);
-  return handleResponse<Character>(response);
+export async function fetchCharacters(options?: FetchOptions): Promise<CharactersResponse> {
+  return fetchWithRetry<CharactersResponse>(`${API_BASE_URL}/character`, options);
+}
+
+export async function fetchCharacter(id: number, options?: FetchOptions): Promise<Character> {
+  return fetchWithRetry<Character>(`${API_BASE_URL}/character/${id}`, options);
 }

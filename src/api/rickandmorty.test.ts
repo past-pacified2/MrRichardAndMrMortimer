@@ -2,6 +2,8 @@ import type { Character, CharactersResponse } from '@/types/api';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { API_BASE_URL, ApiError, ApiNotFoundError, fetchCharacter, fetchCharacters } from './rickandmorty';
 
+const noRetry = { maxRetries: 0, retryDelayMs: 0 };
+
 const mockCharacter: Character = {
   id: 1,
   name: 'Rick Sanchez',
@@ -49,7 +51,7 @@ describe('fetchCharacters', () => {
   it('fetches the first page of characters', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
 
-    const result = await fetchCharacters();
+    const result = await fetchCharacters(noRetry);
 
     expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character`);
     expect(result).toEqual(mockCharactersResponse);
@@ -60,8 +62,53 @@ describe('fetchCharacters', () => {
       mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
     );
 
-    const error = await fetchCharacters().catch((caught: unknown) => caught);
+    const error = await fetchCharacters(noRetry).catch((caught: unknown) => caught);
 
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({
+      status: 500,
+      message: 'Server error',
+    });
+  });
+
+  it('retries recoverable errors and succeeds', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+      )
+      .mockResolvedValueOnce(mockFetchResponse(mockCharactersResponse));
+
+    const result = await fetchCharacters({ maxRetries: 1, retryDelayMs: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual(mockCharactersResponse);
+  });
+
+  it('retries network errors and succeeds', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(mockFetchResponse(mockCharactersResponse));
+
+    const result = await fetchCharacters({ maxRetries: 1, retryDelayMs: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual(mockCharactersResponse);
+  });
+
+  it('throws after exhausting retries on persistent failures', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(
+          mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+        ),
+      );
+
+    const error = await fetchCharacters({ maxRetries: 2, retryDelayMs: 0 }).catch((caught: unknown) => caught);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({
       status: 500,
@@ -78,19 +125,20 @@ describe('fetchCharacter', () => {
   it('fetches a single character by id', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharacter));
 
-    const result = await fetchCharacter(1);
+    const result = await fetchCharacter(1, noRetry);
 
     expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character/1`);
     expect(result).toEqual(mockCharacter);
   });
 
   it('throws ApiNotFoundError when the character does not exist', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      mockFetchResponse({ error: 'Character not found' }, { status: 404, statusText: 'Not Found' }),
-    );
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(mockFetchResponse({ error: 'Character not found' }, { status: 404, statusText: 'Not Found' }));
 
-    const error = await fetchCharacter(99999).catch((caught: unknown) => caught);
+    const error = await fetchCharacter(99999, noRetry).catch((caught: unknown) => caught);
 
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(error).toBeInstanceOf(ApiNotFoundError);
     expect(error).toMatchObject({
       status: 404,
@@ -98,13 +146,56 @@ describe('fetchCharacter', () => {
     });
   });
 
+  it('does not retry not-found errors', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(mockFetchResponse({ error: 'Character not found' }, { status: 404, statusText: 'Not Found' }));
+
+    await fetchCharacter(99999, { maxRetries: 2, retryDelayMs: 0 }).catch(() => undefined);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('throws ApiError for other failed responses', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
     );
 
-    const error = await fetchCharacter(1).catch((caught: unknown) => caught);
+    const error = await fetchCharacter(1, noRetry).catch((caught: unknown) => caught);
 
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({
+      status: 500,
+      message: 'Server error',
+    });
+  });
+
+  it('retries recoverable errors and succeeds', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+      )
+      .mockResolvedValueOnce(mockFetchResponse(mockCharacter));
+
+    const result = await fetchCharacter(1, { maxRetries: 1, retryDelayMs: 0 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual(mockCharacter);
+  });
+
+  it('throws after exhausting retries on persistent failures', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(() =>
+        Promise.resolve(
+          mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
+        ),
+      );
+
+    const error = await fetchCharacter(1, { maxRetries: 2, retryDelayMs: 0 }).catch((caught: unknown) => caught);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({
       status: 500,
