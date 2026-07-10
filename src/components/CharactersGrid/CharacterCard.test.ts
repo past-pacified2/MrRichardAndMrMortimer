@@ -53,7 +53,7 @@ describe('characterCard', () => {
     const { wrapper } = mountCharacterCard();
 
     expect(wrapper.get('a').attributes('href')).toBe('/character/1');
-    expect(wrapper.get('a').attributes('aria-label')).toBe("View Rick Sanchez's details");
+    expect(wrapper.get('h2').text()).toBe('Rick Sanchez');
   });
 
   it('does not prefetch immediately on hover', async () => {

@@ -24,7 +24,7 @@ defineProps<{
 
     <RouterLink
       :to="{ name: 'home' }"
-      class="error-page__action inline-block rounded-lg border border-white/10 bg-white/5 px-6 py-3 text-white transition hover:border-white/20"
+      class="error-page__action inline-block rounded-lg border border-white/10 bg-white/5 px-6 py-3 text-white transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       Back to characters
     </RouterLink>

@@ -15,7 +15,7 @@ const emit = defineEmits<{
     </p>
     <button
       type="button"
-      class="cursor-pointer rounded-md border border-white/10 bg-white/5 px-4 py-2 text-white transition hover:border-white/20"
+      class="cursor-pointer rounded-md border border-white/10 bg-white/5 px-4 py-2 text-white transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       @click="emit('retry')"
     >
       Try again

@@ -99,4 +99,32 @@
     flex-direction: column;
     box-sizing: border-box;
   }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    z-index: 100;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #08060d;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform 150ms ease;
+
+    &:focus {
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link {
+      transition: none;
+    }
+
+    .animate-pulse {
+      animation: none;
+    }
+  }
 }

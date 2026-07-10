@@ -39,7 +39,7 @@ test.describe('error recovery', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
 
     await expect(page.getByLabel('Loading characters')).toBeHidden({ timeout: 15_000 });
-    await expect(page.getByRole('link', { name: "View Rick Sanchez's details" })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Rick Sanchez', level: 2 })).toBeVisible({ timeout: 15_000 });
     expect(requestCount).toBeGreaterThanOrEqual(2);
   });
 });

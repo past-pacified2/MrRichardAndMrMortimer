@@ -50,11 +50,10 @@ onScopeDispose(() => {
   <RouterLink
     :to="{ name: 'character', params: { id: character.id } }"
     class="character-card block rounded-lg border border-white/10 p-4 transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-    :aria-label="`View ${character.name}'s details`"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <LazyImage :src="character.image" :alt="character.name" :width="300" :height="300" />
+    <LazyImage :src="character.image" alt="" :width="300" :height="300" />
     <h2 class="character-card__name mb-2 text-xl text-white">
       {{ character.name }}
     </h2>

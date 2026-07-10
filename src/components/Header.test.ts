@@ -20,8 +20,8 @@ describe('header', () => {
   it('renders the site logo linking to home', () => {
     const wrapper = mountHeader();
 
-    const homeLink = wrapper.get('a[aria-label="Go to Home"]');
+    const homeLink = wrapper.get('a[aria-label="Go to home"]');
     expect(homeLink.attributes('href')).toBe('/');
-    expect(wrapper.find('img[alt="Morty-head"]').exists()).toBe(true);
+    expect(wrapper.find('img[alt=""]').exists()).toBe(true);
   });
 });

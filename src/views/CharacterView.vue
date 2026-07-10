@@ -44,6 +44,18 @@ watch(
   { immediate: true },
 );
 
+const sectionLabel = computed(() => {
+  if (isSuccess.value && data.value) {
+    return data.value.name;
+  }
+
+  if (isError.value) {
+    return 'Character error';
+  }
+
+  return `Character #${characterId.value}`;
+});
+
 usePageSeo(
   computed(() => {
     if (characterId.value === null) {
@@ -60,12 +72,11 @@ usePageSeo(
 </script>
 
 <template>
-  <section v-if="characterId !== null" aria-labelledby="character-heading">
-    <nav class="mb-6">
+  <section v-if="characterId !== null" :aria-label="sectionLabel">
+    <nav class="mb-6" aria-label="Breadcrumb">
       <RouterLink
         :to="{ name: 'home' }"
-        class="text-lg text-white/70 transition hover:text-white"
-        aria-label="Back to characters"
+        class="text-lg text-white/70 transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         ← Back to characters
       </RouterLink>

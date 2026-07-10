@@ -26,7 +26,7 @@ test.describe('error pages', () => {
   test('shows the 404 page for unknown character ids from the api', async ({ page }) => {
     await page.goto('/character/99999');
 
-    await expect(page.getByLabel('Loading character')).toBeHidden({ timeout: 15_000 });
+    await expect(page.locator('[aria-label="Loading character"]')).toBeHidden({ timeout: 15_000 });
     await expect(page).toHaveTitle(/Page not found/);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/character\/99999$/);
     await expect(page.getByRole('heading', { name: 'Dimension not found', level: 1 })).toBeVisible();

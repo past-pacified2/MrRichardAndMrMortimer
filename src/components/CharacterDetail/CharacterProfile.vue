@@ -22,7 +22,7 @@ const episodeCount = computed(() => props.character.episode.length);
     <div class="character-profile__layout grid gap-8 md:grid-cols-[minmax(0,20rem)_1fr] md:items-start">
       <img
         :src="character.image"
-        :alt="character.name"
+        :alt="`Portrait of ${character.name}`"
         width="320"
         height="320"
         class="character-profile__image mx-auto aspect-square w-full max-w-72 rounded-2xl object-cover"
