@@ -58,6 +58,7 @@ export function buildPaginationItems(currentPage: number, totalPages: number): P
   for (let index = 0; index < sortedPages.length; index++) {
     const page = sortedPages[index];
 
+    // Non-null assertion is safe: guarded by `index > 0`, so `index - 1` is always a valid in-bounds index.
     if (index > 0 && page - sortedPages[index - 1]! > 1) {
       items.push({ type: 'ellipsis' });
     }

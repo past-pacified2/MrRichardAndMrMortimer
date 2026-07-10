@@ -37,6 +37,7 @@ export function parseCharacterId(id: string | number): number | null {
 export function useCharacter(id: MaybeRefOrGetter<number | null>) {
   return useQuery({
     queryKey: computed(() => ['character', toValue(id)]),
+    // Non-null assertion is safe: `enabled` gates the query on `id !== null`, so queryFn only runs with a real id.
     queryFn: () => fetchCharacter(toValue(id)!),
     enabled: computed(() => toValue(id) !== null),
     staleTime: STALE_TIME_MS,
