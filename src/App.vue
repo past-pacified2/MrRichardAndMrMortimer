@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
+import { RouterView, useRoute, useRouter } from 'vue-router';
 
 import Footer from '@/components/Footer.vue';
 import Header from '@/components/Header.vue';
+import { useFatalErrorBoundary } from '@/composables/useFatalErrorBoundary';
+
+const router = useRouter();
+const route = useRoute();
+
+useFatalErrorBoundary(router, route);
 </script>
 
 <template>
