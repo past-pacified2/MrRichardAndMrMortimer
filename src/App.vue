@@ -8,15 +8,9 @@ import Header from '@/components/Header.vue';
 <template>
   <Header />
 
-  <main class="container block py-4">
+  <main class="container px-4 py-4 md:px-6 lg:px-8">
     <RouterView />
   </main>
 
   <Footer class="mt-auto" />
 </template>
-
-<style scoped>
-footer {
-  margin-top: auto;
-}
-</style>
