@@ -7,9 +7,9 @@ const props = defineProps<{
 }>();
 
 const statusClasses: Record<CharacterStatus, string> = {
-  Alive: 'bg-green-500/15 text-green-700 dark:text-green-400',
-  Dead: 'bg-red-500/15 text-red-700 dark:text-red-400',
-  unknown: 'bg-violet-500/15 text-violet-700 dark:text-violet-400',
+  Alive: 'bg-green-500/15 text-green-800 dark:text-green-400',
+  Dead: 'bg-red-500/15 text-red-800 dark:text-red-400',
+  unknown: 'bg-violet-500/15 text-violet-800 dark:text-violet-400',
 };
 
 const statusClass = computed(() => statusClasses[props.character.status]);

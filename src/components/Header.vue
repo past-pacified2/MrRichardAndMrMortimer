@@ -9,7 +9,7 @@ import { RouterLink } from 'vue-router';
         <img src="/svgs/mortimer.svg" alt="Morty-head" width="60" height="60" />
       </RouterLink>
 
-      <p class="mr-auto hidden cursor-default text-2xl md:block">Mr. Rick & Mr. Mortimer</p>
+      <p class="mr-auto hidden cursor-default text-2xl text-white md:block">Mr. Rick & Mr. Mortimer</p>
     </div>
   </header>
 </template>
