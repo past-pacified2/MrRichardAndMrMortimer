@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { computed, onScopeDispose, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { CHARACTER_PREFETCH_HOVER_MS, prefetchCharacter } from '@/composables/useCharacter';
+import LazyImage from './LazyImage.vue';
 
 const props = defineProps<{
   character: Character;
@@ -53,14 +54,7 @@ onScopeDispose(() => {
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <img
-      :src="character.image"
-      :alt="character.name"
-      width="300"
-      height="300"
-      loading="lazy"
-      class="character-card__image mx-auto mb-4 aspect-square w-full max-w-40 rounded-full object-cover"
-    />
+    <LazyImage :src="character.image" :alt="character.name" :width="300" :height="300" />
     <h2 class="character-card__name mb-2 text-xl text-white">
       {{ character.name }}
     </h2>
