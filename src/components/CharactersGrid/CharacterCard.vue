@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import type { Character, CharacterStatus } from '@/types/api';
-import { computed } from 'vue';
+import { useQueryClient } from '@tanstack/vue-query';
+import { computed, onScopeDispose, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import { CHARACTER_PREFETCH_HOVER_MS, prefetchCharacter } from '@/composables/useCharacter';
 
 const props = defineProps<{
   character: Character;
 }>();
+
+const queryClient = useQueryClient();
+const prefetchTimer = ref<ReturnType<typeof setTimeout> | undefined>();
 
 const statusClasses: Record<CharacterStatus, string> = {
   Alive: 'bg-green-500/15 text-green-700 dark:text-green-400',
@@ -14,6 +19,30 @@ const statusClasses: Record<CharacterStatus, string> = {
 };
 
 const statusClass = computed(() => statusClasses[props.character.status]);
+
+function clearPrefetchTimer() {
+  if (prefetchTimer.value) {
+    clearTimeout(prefetchTimer.value);
+    prefetchTimer.value = undefined;
+  }
+}
+
+function onMouseEnter() {
+  clearPrefetchTimer();
+
+  prefetchTimer.value = setTimeout(() => {
+    void prefetchCharacter(queryClient, props.character.id);
+    prefetchTimer.value = undefined;
+  }, CHARACTER_PREFETCH_HOVER_MS);
+}
+
+function onMouseLeave() {
+  clearPrefetchTimer();
+}
+
+onScopeDispose(() => {
+  clearPrefetchTimer();
+});
 </script>
 
 <template>
@@ -21,6 +50,8 @@ const statusClass = computed(() => statusClasses[props.character.status]);
     :to="{ name: 'character', params: { id: character.id } }"
     class="character-card block rounded-lg border border-white/10 p-4 transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     :aria-label="`View ${character.name}'s details`"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <img
       :src="character.image"
