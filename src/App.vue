@@ -1,3 +1,5 @@
+<script setup lang="ts"></script>
+
 <template>
   <header>
     <h1>Rick & Morty</h1>
@@ -12,10 +14,8 @@
   </footer>
 </template>
 
-<script setup lang="ts"></script>
-
 <style scoped>
-  footer {
-    margin-top: auto;
-  }
+footer {
+  margin-top: auto;
+}
 </style>
