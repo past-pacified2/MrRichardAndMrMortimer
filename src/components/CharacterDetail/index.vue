@@ -1,34 +1,26 @@
 <script setup lang="ts">
-import { computed, toRef, watch } from 'vue';
+import type { Character } from '@/types/api';
+import { computed } from 'vue';
 import { ApiNotFoundError } from '@/api/rickandmorty';
-import { useCharacter } from '@/composables/useCharacter';
 import CharacterProfile from './CharacterProfile.vue';
 import ErrorState from './ErrorState.vue';
 import LoadingState from './LoadingState.vue';
 
 const props = defineProps<{
-  characterId: number;
+  isPending: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+  character?: Character;
+  error?: Error | null;
 }>();
 
 const emit = defineEmits<{
-  notFound: [];
+  retry: [];
 }>();
 
-const { isPending, isError, isSuccess, data, error, refetch } = useCharacter(toRef(props, 'characterId'));
-
-watch(
-  error,
-  (value) => {
-    if (value instanceof ApiNotFoundError) {
-      emit('notFound');
-    }
-  },
-  { immediate: true },
-);
-
 const errorMessage = computed(() => {
-  if (error.value instanceof Error && error.value.message) {
-    return error.value.message;
+  if (props.error instanceof Error && props.error.message) {
+    return props.error.message;
   }
 
   return 'Could not load character.';
@@ -38,7 +30,11 @@ const errorMessage = computed(() => {
 <template>
   <LoadingState v-if="isPending" />
 
-  <ErrorState v-else-if="isError && !(error instanceof ApiNotFoundError)" :message="errorMessage" @retry="refetch" />
+  <ErrorState
+    v-else-if="isError && !(error instanceof ApiNotFoundError)"
+    :message="errorMessage"
+    @retry="emit('retry')"
+  />
 
-  <CharacterProfile v-else-if="isSuccess && data" :character="data" />
+  <CharacterProfile v-else-if="isSuccess && character" :character="character" />
 </template>

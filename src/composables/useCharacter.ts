@@ -34,10 +34,11 @@ export function parseCharacterId(id: string | number): number | null {
   return parsed;
 }
 
-export function useCharacter(id: MaybeRefOrGetter<number>) {
+export function useCharacter(id: MaybeRefOrGetter<number | null>) {
   return useQuery({
-    queryKey: computed(() => getCharacterQueryKey(toValue(id))),
-    queryFn: () => fetchCharacter(toValue(id)),
+    queryKey: computed(() => ['character', toValue(id)]),
+    queryFn: () => fetchCharacter(toValue(id)!),
+    enabled: computed(() => toValue(id) !== null),
     staleTime: STALE_TIME_MS,
     retry: false,
   });
