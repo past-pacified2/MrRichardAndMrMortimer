@@ -11,6 +11,14 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:unit": "vitest run --passWithNoTests",
+    "test:unit:watch": "vitest",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
+    "check": "npm run lint && npm run format:check && npm run test:unit && npm run build",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -30,20 +38,26 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "9.1.0",
+    "@axe-core/playwright": "4.12.1",
     "@commitlint/cli": "21.2.1",
     "@commitlint/config-conventional": "21.2.0",
+    "@playwright/test": "1.61.1",
     "@tailwindcss/vite": "4.3.2",
     "@types/node": "24.13.2",
     "@vitejs/plugin-vue": "6.0.7",
+    "@vue/test-utils": "2.4.11",
     "@vue/tsconfig": "0.9.1",
+    "axe-playwright": "2.2.2",
     "eslint": "10.6.0",
     "husky": "9.1.7",
+    "jsdom": "29.1.1",
     "lint-staged": "17.0.8",
     "prettier": "3.9.5",
     "prettier-plugin-tailwindcss": "0.8.0",
     "tailwindcss": "4.3.2",
     "typescript": "6.0.2",
     "vite": "8.1.1",
+    "vitest": "4.1.10",
     "vue-tsc": "3.3.5"
   }
 }
