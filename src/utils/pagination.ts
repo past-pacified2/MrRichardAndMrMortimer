@@ -1,3 +1,5 @@
+import { CHARACTER_NAME_FILTER_MIN_LENGTH } from '@/composables/useCharacterNameFilter';
+
 export function parsePageQuery(value: unknown): number {
   if (typeof value === 'string' && /^\d+$/.test(value)) {
     const page = Number.parseInt(value, 10);
@@ -11,8 +13,28 @@ export function parsePageQuery(value: unknown): number {
   return 1;
 }
 
-export function buildPageQuery(page: number): Record<string, string> {
-  return page > 1 ? { page: String(page) } : {};
+export function parseNameQuery(value: unknown): string | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+
+  return trimmed.length >= CHARACTER_NAME_FILTER_MIN_LENGTH ? trimmed : undefined;
+}
+
+export function buildPageQuery(page: number, name?: string): Record<string, string> {
+  const query: Record<string, string> = {};
+
+  if (page > 1) {
+    query.page = String(page);
+  }
+
+  if (name) {
+    query.name = name;
+  }
+
+  return query;
 }
 
 export type PaginationItem = { type: 'page'; page: number } | { type: 'ellipsis' };

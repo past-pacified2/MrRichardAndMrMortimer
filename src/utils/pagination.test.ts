@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPageQuery, buildPaginationItems, parsePageQuery } from './pagination';
+import { buildPageQuery, buildPaginationItems, parseNameQuery, parsePageQuery } from './pagination';
 
 describe('parsePageQuery', () => {
   it('returns 1 for missing or invalid values', () => {
@@ -24,6 +24,26 @@ describe('buildPageQuery', () => {
 
   it('includes page numbers greater than 1', () => {
     expect(buildPageQuery(3)).toEqual({ page: '3' });
+  });
+
+  it('includes a name filter when provided', () => {
+    expect(buildPageQuery(1, 'Rick')).toEqual({ name: 'Rick' });
+  });
+
+  it('includes page and name together', () => {
+    expect(buildPageQuery(2, 'Rick')).toEqual({ page: '2', name: 'Rick' });
+  });
+});
+
+describe('parseNameQuery', () => {
+  it('returns undefined for missing or short values', () => {
+    expect(parseNameQuery(undefined)).toBeUndefined();
+    expect(parseNameQuery('')).toBeUndefined();
+    expect(parseNameQuery('Ri')).toBeUndefined();
+  });
+
+  it('returns a trimmed name when long enough', () => {
+    expect(parseNameQuery('  Rick  ')).toBe('Rick');
   });
 });
 

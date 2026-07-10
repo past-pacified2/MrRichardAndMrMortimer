@@ -72,3 +72,8 @@ export function getRequestedPage(url: string): number {
   const match = url.match(/[?&]page=(\d+)/);
   return match ? Number.parseInt(match[1]!, 10) : 1;
 }
+
+export function getRequestedName(url: string): string | undefined {
+  const match = url.match(/[?&]name=([^&]+)/);
+  return match ? decodeURIComponent(match[1]!.replace(/\+/g, ' ')) : undefined;
+}

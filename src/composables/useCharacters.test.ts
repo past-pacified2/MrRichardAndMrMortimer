@@ -58,7 +58,7 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith(1);
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 });
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharactersResponse);
   });
@@ -70,7 +70,18 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith(2);
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
+    expect(result.isSuccess.value).toBe(true);
+  });
+
+  it('loads characters filtered by name', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { result } = renderComposable(() => useCharacters(1, 'Rick'));
+
+    await flushPromises();
+
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
     expect(result.isSuccess.value).toBe(true);
   });
 

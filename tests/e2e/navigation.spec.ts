@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { getRequestedPage, isCharactersListRequest, mockCharactersPageTwo, mockPageTwoCharacter } from './helpers/api';
+import {
+  getRequestedPage,
+  isCharactersListRequest,
+  mockCharactersPageOne,
+  mockCharactersPageTwo,
+  mockPageTwoCharacter,
+} from './helpers/api';
 
 test.describe('character navigation', () => {
   test('loads the homepage and navigates to a character detail page', async ({ page }) => {
@@ -29,11 +35,36 @@ test.describe('character navigation', () => {
   });
 
   test('loads a specific page from the url query param', async ({ page }) => {
+    await page.route('**/api/character**', async (route) => {
+      const url = route.request().url();
+
+      if (!isCharactersListRequest(url)) {
+        await route.continue();
+        return;
+      }
+
+      if (getRequestedPage(url) === 2) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(mockCharactersPageTwo),
+        });
+        return;
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockCharactersPageOne),
+      });
+    });
+
     await page.goto('/?page=2');
 
     await expect(page.getByLabel('Loading characters')).toBeHidden({ timeout: 15_000 });
     await expect(page.getByRole('button', { name: 'Page 2', disabled: true })).toBeVisible();
     await expect(page.getByRole('link', { name: /Rick Sanchez/i })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: /Test Character Page Two/i })).toBeVisible();
   });
 
   test('returns to the paginated grid page from character detail', async ({ page }) => {

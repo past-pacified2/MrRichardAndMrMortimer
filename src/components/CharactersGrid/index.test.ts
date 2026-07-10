@@ -96,7 +96,7 @@ describe('charactersGrid', () => {
     await mountCharactersGrid('/?page=2');
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith(2);
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
   });
 
   it('updates the url when the next page is selected', async () => {
@@ -109,7 +109,7 @@ describe('charactersGrid', () => {
     await flushPromises();
 
     expect(router.currentRoute.value.query.page).toBe('2');
-    expect(fetchCharacters).toHaveBeenCalledWith(2);
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
   });
 
   it('hides pagination when there is only one page', async () => {
@@ -122,5 +122,110 @@ describe('charactersGrid', () => {
     await flushPromises();
 
     expect(wrapper.find('[aria-label="Characters pagination"]').exists()).toBe(false);
+  });
+
+  it('does not query by name until at least 3 characters are entered', async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper } = await mountCharactersGrid();
+    await flushPromises();
+    vi.mocked(fetchCharacters).mockClear();
+
+    const filterInput = wrapper.get('[aria-label="Filter by character name"]');
+    await filterInput.setValue('Ri');
+    await vi.advanceTimersByTimeAsync(300);
+    await flushPromises();
+
+    expect(fetchCharacters).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('queries by name after debouncing once 3 characters are entered', async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper, router } = await mountCharactersGrid();
+    await flushPromises();
+    vi.mocked(fetchCharacters).mockClear();
+
+    const filterInput = wrapper.get('[aria-label="Filter by character name"]');
+    await filterInput.setValue('Rick');
+    await vi.advanceTimersByTimeAsync(300);
+    await flushPromises();
+
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect(router.currentRoute.value.query.name).toBe('Rick');
+
+    vi.useRealTimers();
+  });
+
+  it('loads a name filter from the url query param', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper } = await mountCharactersGrid('/?name=Rick');
+    await flushPromises();
+
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect((wrapper.get('[aria-label="Filter by character name"]').element as HTMLInputElement).value).toBe('Rick');
+  });
+
+  it('preserves the name filter when paginating', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper, router } = await mountCharactersGrid('/?name=Rick');
+    await flushPromises();
+
+    await wrapper.get('[aria-label="Next page"]').trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.query).toEqual({ page: '2', name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2, name: 'Rick' });
+  });
+
+  it('does not query while the user is still typing', async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper } = await mountCharactersGrid();
+    await flushPromises();
+    vi.mocked(fetchCharacters).mockClear();
+
+    const filterInput = wrapper.get('[aria-label="Filter by character name"]');
+    await filterInput.setValue('R');
+    await vi.advanceTimersByTimeAsync(100);
+    await filterInput.setValue('Ri');
+    await vi.advanceTimersByTimeAsync(100);
+    await filterInput.setValue('Rick');
+    await vi.advanceTimersByTimeAsync(299);
+    await flushPromises();
+
+    expect(fetchCharacters).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(1);
+    await flushPromises();
+
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+
+    vi.useRealTimers();
+  });
+
+  it('removes the name filter from the url when the input is cleared', async () => {
+    vi.useFakeTimers();
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { wrapper, router } = await mountCharactersGrid('/?name=Rick');
+    await flushPromises();
+    vi.mocked(fetchCharacters).mockClear();
+
+    await wrapper.get('[aria-label="Filter by character name"]').setValue('');
+    await vi.advanceTimersByTimeAsync(300);
+    await flushPromises();
+
+    expect(router.currentRoute.value.query.name).toBeUndefined();
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 });
+
+    vi.useRealTimers();
   });
 });

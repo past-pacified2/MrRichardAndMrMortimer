@@ -75,6 +75,24 @@ describe('fetchCharacters', () => {
     expect(result).toEqual(pageTwoResponse);
   });
 
+  it('fetches characters filtered by name', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
+
+    const result = await fetchCharacters({ page: 1, name: 'Rick' }, noRetry);
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character?name=Rick`);
+    expect(result).toEqual(mockCharactersResponse);
+  });
+
+  it('fetches a filtered page of characters', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
+
+    const result = await fetchCharacters({ page: 2, name: 'Rick' }, noRetry);
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character?page=2&name=Rick`);
+    expect(result).toEqual(mockCharactersResponse);
+  });
+
   it('throws ApiError when the request fails', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(
       mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),

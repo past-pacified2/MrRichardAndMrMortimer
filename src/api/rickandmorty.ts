@@ -88,9 +88,46 @@ async function fetchWithRetry<T>(url: string, options: FetchOptions = {}): Promi
   throw new Error('Unreachable');
 }
 
-export async function fetchCharacters(page = 1, options?: FetchOptions): Promise<CharactersResponse> {
-  const url = page > 1 ? `${API_BASE_URL}/character?page=${page}` : `${API_BASE_URL}/character`;
-  return fetchWithRetry<CharactersResponse>(url, options);
+export interface FetchCharactersParams {
+  page?: number;
+  name?: string;
+}
+
+function resolveFetchCharactersParams(pageOrParams: number | FetchCharactersParams): {
+  page: number;
+  name?: string;
+} {
+  if (typeof pageOrParams === 'number') {
+    return { page: pageOrParams };
+  }
+
+  return {
+    page: pageOrParams.page ?? 1,
+    name: pageOrParams.name,
+  };
+}
+
+function buildCharactersUrl(page: number, name?: string): string {
+  const params = new URLSearchParams();
+
+  if (page > 1) {
+    params.set('page', String(page));
+  }
+
+  if (name) {
+    params.set('name', name);
+  }
+
+  const query = params.toString();
+  return query ? `${API_BASE_URL}/character?${query}` : `${API_BASE_URL}/character`;
+}
+
+export async function fetchCharacters(
+  pageOrParams: number | FetchCharactersParams = 1,
+  options?: FetchOptions,
+): Promise<CharactersResponse> {
+  const { page, name } = resolveFetchCharactersParams(pageOrParams);
+  return fetchWithRetry<CharactersResponse>(buildCharactersUrl(page, name), options);
 }
 
 export async function fetchCharacter(id: number, options?: FetchOptions): Promise<Character> {

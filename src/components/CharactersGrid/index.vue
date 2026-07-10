@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useCharacterNameFilter } from '@/composables/useCharacterNameFilter';
 import { useCharacters } from '@/composables/useCharacters';
-import { buildPageQuery, parsePageQuery } from '@/utils/pagination';
+import { buildPageQuery, parseNameQuery, parsePageQuery } from '@/utils/pagination';
 import CharacterCard from './CharacterCard.vue';
 import ErrorState from './ErrorState.vue';
 import LoadingState from './LoadingState.vue';
@@ -12,8 +13,11 @@ const route = useRoute();
 const router = useRouter();
 
 const currentPage = computed(() => parsePageQuery(route.query.page));
+const nameFilter = computed(() => parseNameQuery(route.query.name));
+const initialName = typeof route.query.name === 'string' ? route.query.name : '';
+const { filterInput, debouncedInput } = useCharacterNameFilter(initialName);
 
-const { isPending, isError, isSuccess, data, error, refetch } = useCharacters(currentPage);
+const { isPending, isError, isSuccess, data, error, refetch } = useCharacters(currentPage, nameFilter);
 
 const errorMessage = computed(() => {
   if (error.value instanceof Error && error.value.message) {
@@ -33,9 +37,40 @@ const characters = computed(() => {
 
 const totalPages = computed(() => data.value?.info.pages ?? 1);
 
-function goToPage(page: number) {
-  void router.replace({ query: buildPageQuery(page) });
+function syncRouteQuery(page: number, name?: string) {
+  const nextQuery = buildPageQuery(page, name);
+  const currentQuery = route.query;
+  const pageMatches = (currentQuery.page ?? undefined) === nextQuery.page;
+  const nameMatches = (currentQuery.name ?? undefined) === nextQuery.name;
+
+  if (pageMatches && nameMatches) {
+    return;
+  }
+
+  void router.replace({ query: nextQuery });
 }
+
+function goToPage(page: number) {
+  syncRouteQuery(page, nameFilter.value);
+}
+
+watch(debouncedInput, (value) => {
+  const nextName = parseNameQuery(value);
+  const page = nextName !== nameFilter.value ? 1 : currentPage.value;
+
+  syncRouteQuery(page, nextName);
+});
+
+watch(
+  () => route.query.name,
+  (name) => {
+    const nextInput = typeof name === 'string' ? name : '';
+
+    if (nextInput !== filterInput.value) {
+      filterInput.value = nextInput;
+    }
+  },
+);
 
 watch([data, currentPage], () => {
   const pages = data.value?.info.pages;
@@ -47,6 +82,17 @@ watch([data, currentPage], () => {
 </script>
 
 <template>
+  <label class="characters-grid__filter mb-6 block">
+    <span class="sr-only">Filter by character name</span>
+    <input
+      v-model="filterInput"
+      type="search"
+      class="characters-grid__filter-input w-full max-w-md rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-white placeholder:text-white/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      placeholder="Filter by name (min 3 characters)"
+      aria-label="Filter by character name"
+    />
+  </label>
+
   <LoadingState v-if="isPending" />
 
   <ErrorState v-else-if="isError" :message="errorMessage" @retry="refetch" />

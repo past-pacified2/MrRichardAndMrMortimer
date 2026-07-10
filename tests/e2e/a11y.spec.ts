@@ -17,6 +17,14 @@ test.describe('accessibility', () => {
     await expectNoViolations(page);
   });
 
+  test('homepage with an active name filter meets WCAG AA', async ({ page }) => {
+    await page.goto('/?name=Rick');
+    await expect(page.getByLabel('Loading characters')).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByLabel('Filter by character name')).toHaveValue('Rick');
+
+    await expectNoViolations(page);
+  });
+
   test('character detail page meets WCAG AA', async ({ page }) => {
     await page.goto('/character/1');
     await expect(page.locator('[aria-label="Loading character"]')).toBeHidden({ timeout: 15_000 });
