@@ -1,5 +1,6 @@
 export default {
-  semi: false,
+  semi: true,
+  printWidth: 120,
   singleQuote: true,
   plugins: ['prettier-plugin-tailwindcss'],
-}
+};
