@@ -1,12 +1,20 @@
 <script setup lang="ts">
-const message = (window.history.state?.message as string | undefined) ?? 'An unknown error occurred';
+import { computed } from 'vue';
+import ErrorPageShell from '@/components/ErrorPageShell.vue';
+import { buildFatalErrorPageSeo } from '@/seo/errorSeo';
+import { usePageSeo } from '@/seo/usePageSeo';
+
+defineOptions({
+  name: 'FatalErrorView',
+});
+
+const message = computed(
+  () => (window.history.state?.message as string | undefined) ?? 'An unknown error occurred in this dimension.',
+);
+
+usePageSeo(buildFatalErrorPageSeo());
 </script>
 
 <template>
-  <h1>Fatal Error</h1>
-  <p>{{ message }}</p>
-
-  <div><a href="/">Go back to the home page</a></div>
+  <ErrorPageShell status-code="500" title="Portal malfunction" :message="message" />
 </template>
-
-<style scoped></style>

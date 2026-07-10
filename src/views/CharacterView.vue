@@ -13,11 +13,22 @@ const router = useRouter();
 const characterId = computed(() => parseCharacterId(route.params.id as string));
 const { isPending, isError, isSuccess, data, error, refetch } = useCharacter(characterId);
 
+function redirectToNotFound() {
+  void router.replace({
+    name: 'not-found',
+    params: {
+      pathMatch: route.path.split('/').filter(Boolean),
+    },
+    query: route.query,
+    hash: route.hash,
+  });
+}
+
 watch(
   characterId,
   (id) => {
     if (id === null) {
-      router.push({ name: 'not-found' });
+      redirectToNotFound();
     }
   },
   { immediate: true },
@@ -27,7 +38,7 @@ watch(
   error,
   (value) => {
     if (value instanceof ApiNotFoundError) {
-      router.push({ name: 'not-found' });
+      redirectToNotFound();
     }
   },
   { immediate: true },

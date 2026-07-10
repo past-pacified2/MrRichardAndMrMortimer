@@ -4,7 +4,11 @@ import { onUnmounted, toValue, watchEffect } from 'vue';
 import { applyPageSeo, resetPageSeo } from './pageSeo';
 import { SITE_URL } from './site';
 
+let activeSeoGeneration = 0;
+
 export function usePageSeo(seo: MaybeRefOrGetter<PageSeo | undefined>) {
+  const generation = ++activeSeoGeneration;
+
   watchEffect(() => {
     const value = toValue(seo);
 
@@ -14,6 +18,8 @@ export function usePageSeo(seo: MaybeRefOrGetter<PageSeo | undefined>) {
   });
 
   onUnmounted(() => {
-    resetPageSeo(SITE_URL);
+    if (generation === activeSeoGeneration) {
+      resetPageSeo(SITE_URL);
+    }
   });
 }
