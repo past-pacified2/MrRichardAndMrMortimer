@@ -3,9 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 export default createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', component: () => import('@/views/HomeView.vue') },
+    { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
     {
       path: '/character/:id',
+      name: 'character',
       component: () => import('@/views/CharacterView.vue'),
     },
     { path: '/character', redirect: '/' },

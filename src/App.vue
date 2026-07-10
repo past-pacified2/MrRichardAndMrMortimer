@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
+
+import Footer from '@/components/Footer.vue';
+import Header from '@/components/Header.vue';
 </script>
 
 <template>
-  <header>
-    <h1>Rick & Morty</h1>
-  </header>
+  <Header />
 
   <main class="container block py-4">
     <RouterView />
   </main>
 
-  <footer>
-    <div>© {{ new Date().getFullYear() }} Rick & Morty API SPA</div>
-  </footer>
+  <Footer class="mt-auto" />
 </template>
 
 <style scoped>
