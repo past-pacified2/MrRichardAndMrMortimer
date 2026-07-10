@@ -51,10 +51,28 @@ describe('fetchCharacters', () => {
   it('fetches the first page of characters', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
 
-    const result = await fetchCharacters(noRetry);
+    const result = await fetchCharacters(1, noRetry);
 
     expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character`);
     expect(result).toEqual(mockCharactersResponse);
+  });
+
+  it('fetches a specific page of characters', async () => {
+    const pageTwoResponse: CharactersResponse = {
+      ...mockCharactersResponse,
+      info: {
+        count: 826,
+        pages: 42,
+        next: `${API_BASE_URL}/character/?page=3`,
+        prev: `${API_BASE_URL}/character`,
+      },
+    };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(pageTwoResponse));
+
+    const result = await fetchCharacters(2, noRetry);
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character?page=2`);
+    expect(result).toEqual(pageTwoResponse);
   });
 
   it('throws ApiError when the request fails', async () => {
@@ -62,7 +80,7 @@ describe('fetchCharacters', () => {
       mockFetchResponse({ error: 'Server error' }, { status: 500, statusText: 'Internal Server Error' }),
     );
 
-    const error = await fetchCharacters(noRetry).catch((caught: unknown) => caught);
+    const error = await fetchCharacters(1, noRetry).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({
@@ -79,7 +97,7 @@ describe('fetchCharacters', () => {
       )
       .mockResolvedValueOnce(mockFetchResponse(mockCharactersResponse));
 
-    const result = await fetchCharacters({ maxRetries: 1, retryDelayMs: 0 });
+    const result = await fetchCharacters(1, { maxRetries: 1, retryDelayMs: 0 });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result).toEqual(mockCharactersResponse);
@@ -91,7 +109,7 @@ describe('fetchCharacters', () => {
       .mockRejectedValueOnce(new TypeError('Failed to fetch'))
       .mockResolvedValueOnce(mockFetchResponse(mockCharactersResponse));
 
-    const result = await fetchCharacters({ maxRetries: 1, retryDelayMs: 0 });
+    const result = await fetchCharacters(1, { maxRetries: 1, retryDelayMs: 0 });
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result).toEqual(mockCharactersResponse);
@@ -106,7 +124,7 @@ describe('fetchCharacters', () => {
         ),
       );
 
-    const error = await fetchCharacters({ maxRetries: 2, retryDelayMs: 0 }).catch((caught: unknown) => caught);
+    const error = await fetchCharacters(1, { maxRetries: 2, retryDelayMs: 0 }).catch((caught: unknown) => caught);
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(error).toBeInstanceOf(ApiError);

@@ -58,9 +58,20 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledOnce();
+    expect(fetchCharacters).toHaveBeenCalledWith(1);
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharactersResponse);
+  });
+
+  it('loads a specific page of characters', async () => {
+    vi.mocked(fetchCharacters).mockResolvedValue(mockCharactersResponse);
+
+    const { result } = renderComposable(() => useCharacters(2));
+
+    await flushPromises();
+
+    expect(fetchCharacters).toHaveBeenCalledWith(2);
+    expect(result.isSuccess.value).toBe(true);
   });
 
   it('enters an error state when fetching fails', async () => {

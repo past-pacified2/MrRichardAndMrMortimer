@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { RouterLink, useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ApiNotFoundError } from '@/api/rickandmorty';
 import CharacterDetail from '@/components/CharacterDetail/index.vue';
 import { parseCharacterId, useCharacter } from '@/composables/useCharacter';
@@ -44,6 +44,17 @@ watch(
   { immediate: true },
 );
 
+function goBack(event: MouseEvent) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+    return;
+  }
+
+  if (window.history.state?.back) {
+    event.preventDefault();
+    router.back();
+  }
+}
+
 const sectionLabel = computed(() => {
   if (isSuccess.value && data.value) {
     return data.value.name;
@@ -74,12 +85,13 @@ usePageSeo(
 <template>
   <section v-if="characterId !== null" :aria-label="sectionLabel">
     <nav class="mb-6" aria-label="Breadcrumb">
-      <RouterLink
-        :to="{ name: 'home' }"
+      <a
+        href="/"
         class="text-lg text-white/70 transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        @click="goBack"
       >
         ← Back to characters
-      </RouterLink>
+      </a>
     </nav>
 
     <CharacterDetail

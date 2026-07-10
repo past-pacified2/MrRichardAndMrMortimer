@@ -39,10 +39,20 @@ test.describe('accessibility', () => {
   });
 
   test('character not-found page meets WCAG AA', async ({ page }) => {
+    await page.route('**/api/character/99999', async (route) => {
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Not found' }),
+      });
+    });
+
     await page.goto('/character/99999');
     await expect(page.locator('[aria-label="Loading character"]')).toBeHidden({ timeout: 15_000 });
 
-    await expect(page.getByRole('heading', { name: 'Dimension not found', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Dimension not found', level: 1 })).toBeVisible({
+      timeout: 15_000,
+    });
     await expectNoViolations(page);
   });
 });

@@ -88,8 +88,9 @@ async function fetchWithRetry<T>(url: string, options: FetchOptions = {}): Promi
   throw new Error('Unreachable');
 }
 
-export async function fetchCharacters(options?: FetchOptions): Promise<CharactersResponse> {
-  return fetchWithRetry<CharactersResponse>(`${API_BASE_URL}/character`, options);
+export async function fetchCharacters(page = 1, options?: FetchOptions): Promise<CharactersResponse> {
+  const url = page > 1 ? `${API_BASE_URL}/character?page=${page}` : `${API_BASE_URL}/character`;
+  return fetchWithRetry<CharactersResponse>(url, options);
 }
 
 export async function fetchCharacter(id: number, options?: FetchOptions): Promise<Character> {

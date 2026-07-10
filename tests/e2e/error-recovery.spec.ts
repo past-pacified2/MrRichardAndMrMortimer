@@ -1,16 +1,15 @@
 import { expect, test } from '@playwright/test';
-
-const CHARACTERS_API = '**/api/character';
+import { isCharactersListRequest, mockCharactersPageOne } from './helpers/api';
 
 test.describe('error recovery', () => {
   test('shows an error state and recovers after retry', async ({ page }) => {
     let requestCount = 0;
     let shouldFail = true;
 
-    await page.route(CHARACTERS_API, async (route) => {
+    await page.route('**/api/character**', async (route) => {
       const url = route.request().url();
 
-      if (!/\/character\/?$/.test(url)) {
+      if (!isCharactersListRequest(url)) {
         await route.continue();
         return;
       }
@@ -26,7 +25,11 @@ test.describe('error recovery', () => {
         return;
       }
 
-      await route.continue();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockCharactersPageOne),
+      });
     });
 
     await page.goto('/');
@@ -39,7 +42,7 @@ test.describe('error recovery', () => {
     await page.getByRole('button', { name: 'Try again' }).click();
 
     await expect(page.getByLabel('Loading characters')).toBeHidden({ timeout: 15_000 });
-    await expect(page.getByRole('heading', { name: 'Rick Sanchez', level: 2 })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('link', { name: /Rick Sanchez/i })).toBeVisible({ timeout: 15_000 });
     expect(requestCount).toBeGreaterThanOrEqual(2);
   });
 });

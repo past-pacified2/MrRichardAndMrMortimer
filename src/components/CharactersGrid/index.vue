@@ -1,11 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useCharacters } from '@/composables/useCharacters';
+import { buildPageQuery, parsePageQuery } from '@/utils/pagination';
 import CharacterCard from './CharacterCard.vue';
 import ErrorState from './ErrorState.vue';
 import LoadingState from './LoadingState.vue';
+import Pagination from './Pagination.vue';
 
-const { isPending, isError, isSuccess, data, error, refetch } = useCharacters();
+const route = useRoute();
+const router = useRouter();
+
+const currentPage = computed(() => parsePageQuery(route.query.page));
+
+const { isPending, isError, isSuccess, data, error, refetch } = useCharacters(currentPage);
 
 const errorMessage = computed(() => {
   if (error.value instanceof Error && error.value.message) {
@@ -22,6 +30,20 @@ const characters = computed(() => {
 
   return data.value.results;
 });
+
+const totalPages = computed(() => data.value?.info.pages ?? 1);
+
+function goToPage(page: number) {
+  void router.replace({ query: buildPageQuery(page) });
+}
+
+watch([data, currentPage], () => {
+  const pages = data.value?.info.pages;
+
+  if (pages && currentPage.value > pages) {
+    goToPage(pages);
+  }
+});
 </script>
 
 <template>
@@ -29,9 +51,13 @@ const characters = computed(() => {
 
   <ErrorState v-else-if="isError" :message="errorMessage" @retry="refetch" />
 
-  <ul v-else-if="isSuccess" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    <li v-for="character in characters" :key="character.id">
-      <CharacterCard :character="character" />
-    </li>
-  </ul>
+  <div v-else-if="isSuccess">
+    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <li v-for="character in characters" :key="character.id">
+        <CharacterCard :character="character" />
+      </li>
+    </ul>
+
+    <Pagination v-if="totalPages > 1" :current-page="currentPage" :total-pages="totalPages" @update:page="goToPage" />
+  </div>
 </template>
