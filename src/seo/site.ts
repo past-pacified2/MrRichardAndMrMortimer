@@ -3,7 +3,7 @@ export const SITE_NAME = 'Mr. Rick & Mr. Mortimer';
 export const DEFAULT_DESCRIPTION =
   'Browse Rick and Morty characters with status, species, origin, and episode details from the Rick and Morty API.';
 
-export const SITE_URL = import.meta.env.VITE_SITE_URL.replace(/\/$/, '');
+export const SITE_URL = import.meta.env.VITE_SITE_URL?.replace(/\/$/, '') || 'http://localhost:5173';
 
 export function absoluteUrl(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
