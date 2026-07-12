@@ -3,16 +3,21 @@ import { RouterView, useRoute, useRouter } from 'vue-router';
 
 import Footer from '@/components/Footer.vue';
 import Header from '@/components/Header.vue';
+import RouteLoadingBar from '@/components/RouteLoadingBar.vue';
+import { useAppLoading } from '@/composables/useAppLoading';
 import { useFatalErrorBoundary } from '@/composables/useFatalErrorBoundary';
 
 const router = useRouter();
 const route = useRoute();
 
 useFatalErrorBoundary(router, route);
+const { isLoading } = useAppLoading(router);
 </script>
 
 <template>
   <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <RouteLoadingBar :is-loading="isLoading" />
 
   <Header />
 

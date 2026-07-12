@@ -1,8 +1,10 @@
 import type { Component } from 'vue';
+import { VueQueryPlugin } from '@tanstack/vue-query';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
+import { createTestQueryClient } from '@/composables/test/renderComposable';
 import App from './App.vue';
 import FatalErrorView from './views/FatalErrorView.vue';
 
@@ -28,9 +30,11 @@ async function mountApp(initialPath: string, view: Component, options: { errorHa
     ],
   });
 
+  const queryClient = createTestQueryClient();
+
   const wrapper = mount(App, {
     global: {
-      plugins: [router],
+      plugins: [[VueQueryPlugin, { queryClient }], router],
       config: options.errorHandler
         ? {
             errorHandler: options.errorHandler,
