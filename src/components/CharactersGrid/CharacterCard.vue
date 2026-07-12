@@ -44,7 +44,7 @@ onScopeDispose(() => {
 <template>
   <RouterLink
     :to="{ name: 'character', params: { id: character.id } }"
-    class="character-card block rounded-lg border border-white/10 p-4 transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+    class="character-card block rounded-lg border border-white/10 p-4 transition hover:border-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:flex sm:h-full sm:flex-col"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
@@ -52,7 +52,7 @@ onScopeDispose(() => {
     <h2 class="character-card__name mb-2 text-xl text-white">
       {{ character.name }}
     </h2>
-    <p class="character-card__meta mb-1">
+    <p class="character-card__meta mb-1 sm:mt-auto">
       <span class="character-card__status inline-block rounded-full px-2 py-0.5 text-sm" :class="statusClass">
         {{ character.status }}
       </span>
