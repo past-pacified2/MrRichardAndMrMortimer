@@ -1,7 +1,8 @@
 import type { MaybeRefOrGetter } from 'vue';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { computed, toValue } from 'vue';
-import { fetchCharacters } from '@/api/rickandmorty';
+import { ApiNotFoundError, fetchCharacters } from '@/api/rickandmorty';
+import { emptyCharactersResponse } from '@/test/fixtures/character';
 
 const STALE_TIME_MS = 1000 * 60 * 5;
 
@@ -11,14 +12,26 @@ export function useCharacters(
 ) {
   return useQuery({
     queryKey: computed(() => ['characters', toValue(page), toValue(name) ?? '']),
-    queryFn: ({ signal }) =>
-      fetchCharacters(
-        {
-          page: toValue(page),
-          name: toValue(name),
-        },
-        { signal },
-      ),
+    queryFn: async ({ signal }) => {
+      const pageValue = toValue(page);
+      const nameValue = toValue(name);
+
+      try {
+        return await fetchCharacters(
+          {
+            page: pageValue,
+            name: nameValue,
+          },
+          { signal },
+        );
+      } catch (error) {
+        if (error instanceof ApiNotFoundError && nameValue) {
+          return emptyCharactersResponse;
+        }
+
+        throw error;
+      }
+    },
     staleTime: STALE_TIME_MS,
     retry: false,
     placeholderData: keepPreviousData,

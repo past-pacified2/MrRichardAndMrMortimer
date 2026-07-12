@@ -2,7 +2,7 @@ import type { CharactersResponse } from '@/types/api';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
-import { ApiError } from '@/api/rickandmorty';
+import { ApiError, ApiNotFoundError } from '@/api/rickandmorty';
 import { renderComposable } from './test/renderComposable';
 import { useCharacters } from './useCharacters';
 
@@ -137,5 +137,17 @@ describe('useCharacters', () => {
     expect(signals).toHaveLength(2);
     expect(signals[0]?.aborted).toBe(true);
     expect(signals[1]?.aborted).toBe(false);
+  });
+
+  it('returns an empty result set when a name filter matches nothing', async () => {
+    vi.mocked(fetchCharacters).mockRejectedValue(new ApiNotFoundError('There is nothing here'));
+
+    const { result } = renderComposable(() => useCharacters(1, 'sadfasdfsdf'));
+
+    await flushPromises();
+
+    expect(result.isSuccess.value).toBe(true);
+    expect(result.isError.value).toBe(false);
+    expect(result.data.value?.results).toEqual([]);
   });
 });

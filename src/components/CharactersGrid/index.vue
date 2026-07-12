@@ -98,7 +98,15 @@ watch([data, currentPage], () => {
   <ErrorState v-else-if="isError" :message="errorMessage" @retry="refetch" />
 
   <div v-else-if="isSuccess">
-    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <p
+      v-if="characters.length === 0 && nameFilter"
+      class="characters-grid__empty rounded-lg border border-white/10 bg-white/5 p-6 text-center text-white/70"
+      aria-live="polite"
+    >
+      No characters match your search.
+    </p>
+
+    <ul v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <li v-for="character in characters" :key="character.id">
         <CharacterCard :character="character" />
       </li>

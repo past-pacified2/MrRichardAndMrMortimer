@@ -3,7 +3,7 @@ import { VueQueryPlugin } from '@tanstack/vue-query';
 import { flushPromises, mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createMemoryHistory, createRouter } from 'vue-router';
-import { ApiError } from '@/api/rickandmorty';
+import { ApiError, ApiNotFoundError } from '@/api/rickandmorty';
 import { createTestQueryClient } from '@/composables/test/renderComposable';
 import { mockCharactersResponse } from '@/test/fixtures/character';
 import CharactersGrid from './index.vue';
@@ -229,5 +229,16 @@ describe('charactersGrid', () => {
     expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 }, fetchOptions);
 
     vi.useRealTimers();
+  });
+
+  it('shows an empty state when a name filter matches nothing', async () => {
+    vi.mocked(fetchCharacters).mockRejectedValue(new ApiNotFoundError('There is nothing here'));
+
+    const { wrapper } = await mountCharactersGrid('/?name=NO_CHARACTER_LIKE_THIS');
+    await flushPromises();
+
+    expect(wrapper.find('.characters-grid__empty').text()).toContain('No characters match your search');
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    expect(wrapper.find('ul').exists()).toBe(false);
   });
 });
