@@ -11,11 +11,14 @@ export function useCharacters(
 ) {
   return useQuery({
     queryKey: computed(() => ['characters', toValue(page), toValue(name) ?? '']),
-    queryFn: () =>
-      fetchCharacters({
-        page: toValue(page),
-        name: toValue(name),
-      }),
+    queryFn: ({ signal }) =>
+      fetchCharacters(
+        {
+          page: toValue(page),
+          name: toValue(name),
+        },
+        { signal },
+      ),
     staleTime: STALE_TIME_MS,
     retry: false,
     placeholderData: keepPreviousData,

@@ -14,7 +14,7 @@ export function getCharacterQueryKey(id: number) {
 export function characterQueryOptions(id: number) {
   return {
     queryKey: getCharacterQueryKey(id),
-    queryFn: () => fetchCharacter(id),
+    queryFn: ({ signal }: { signal: AbortSignal }) => fetchCharacter(id, { signal }),
     staleTime: STALE_TIME_MS,
     retry: false,
   };
@@ -38,7 +38,7 @@ export function useCharacter(id: MaybeRefOrGetter<number | null>) {
   return useQuery({
     queryKey: computed(() => ['character', toValue(id)]),
     // Non-null assertion is safe: `enabled` gates the query on `id !== null`, so queryFn only runs with a real id.
-    queryFn: () => fetchCharacter(toValue(id)!),
+    queryFn: ({ signal }) => fetchCharacter(toValue(id)!, { signal }),
     enabled: computed(() => toValue(id) !== null),
     staleTime: STALE_TIME_MS,
     retry: false,

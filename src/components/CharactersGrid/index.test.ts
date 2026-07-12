@@ -18,6 +18,8 @@ vi.mock('@/api/rickandmorty', async (importOriginal) => {
 
 const { fetchCharacters } = await import('@/api/rickandmorty');
 
+const fetchOptions = { signal: expect.any(AbortSignal) };
+
 async function mountCharactersGrid(initialPath = '/') {
   const queryClient = createTestQueryClient();
   const router = createRouter({
@@ -96,7 +98,7 @@ describe('charactersGrid', () => {
     await mountCharactersGrid('/?page=2');
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 }, fetchOptions);
   });
 
   it('updates the url when the next page is selected', async () => {
@@ -109,7 +111,7 @@ describe('charactersGrid', () => {
     await flushPromises();
 
     expect(router.currentRoute.value.query.page).toBe('2');
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 }, fetchOptions);
   });
 
   it('hides pagination when there is only one page', async () => {
@@ -155,7 +157,7 @@ describe('charactersGrid', () => {
     await vi.advanceTimersByTimeAsync(300);
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' }, fetchOptions);
     expect(router.currentRoute.value.query.name).toBe('Rick');
 
     vi.useRealTimers();
@@ -167,7 +169,7 @@ describe('charactersGrid', () => {
     const { wrapper } = await mountCharactersGrid('/?name=Rick');
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' }, fetchOptions);
     expect((wrapper.get('[aria-label="Filter by character name"]').element as HTMLInputElement).value).toBe('Rick');
   });
 
@@ -181,7 +183,7 @@ describe('charactersGrid', () => {
     await flushPromises();
 
     expect(router.currentRoute.value.query).toEqual({ page: '2', name: 'Rick' });
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2, name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2, name: 'Rick' }, fetchOptions);
   });
 
   it('does not query while the user is still typing', async () => {
@@ -206,7 +208,7 @@ describe('charactersGrid', () => {
     await vi.advanceTimersByTimeAsync(1);
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' }, fetchOptions);
 
     vi.useRealTimers();
   });
@@ -224,7 +226,7 @@ describe('charactersGrid', () => {
     await flushPromises();
 
     expect(router.currentRoute.value.query.name).toBeUndefined();
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 }, fetchOptions);
 
     vi.useRealTimers();
   });

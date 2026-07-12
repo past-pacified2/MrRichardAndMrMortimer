@@ -1,6 +1,7 @@
 import type { CharactersResponse } from '@/types/api';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ref } from 'vue';
 import { ApiError } from '@/api/rickandmorty';
 import { renderComposable } from './test/renderComposable';
 import { useCharacters } from './useCharacters';
@@ -58,7 +59,7 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1 }, { signal: expect.any(AbortSignal) });
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharactersResponse);
   });
@@ -70,7 +71,7 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 2 }, { signal: expect.any(AbortSignal) });
     expect(result.isSuccess.value).toBe(true);
   });
 
@@ -81,7 +82,7 @@ describe('useCharacters', () => {
 
     await flushPromises();
 
-    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' });
+    expect(fetchCharacters).toHaveBeenCalledWith({ page: 1, name: 'Rick' }, { signal: expect.any(AbortSignal) });
     expect(result.isSuccess.value).toBe(true);
   });
 
@@ -112,5 +113,29 @@ describe('useCharacters', () => {
     expect(fetchCharacters).toHaveBeenCalledTimes(2);
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharactersResponse);
+  });
+
+  it('aborts the previous request when the page changes', async () => {
+    const signals: AbortSignal[] = [];
+
+    vi.mocked(fetchCharacters).mockImplementation((_params, options) => {
+      if (options?.signal) {
+        signals.push(options.signal);
+      }
+
+      return new Promise(() => {});
+    });
+
+    const page = ref(1);
+    renderComposable(() => useCharacters(page));
+
+    await flushPromises();
+
+    page.value = 2;
+    await flushPromises();
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0]?.aborted).toBe(true);
+    expect(signals[1]?.aborted).toBe(false);
   });
 });

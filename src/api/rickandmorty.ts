@@ -8,6 +8,7 @@ const DEFAULT_RETRY_DELAY_MS = 300;
 export interface FetchOptions {
   maxRetries?: number;
   retryDelayMs?: number;
+  signal?: AbortSignal;
 }
 
 export class ApiNotFoundError extends Error {
@@ -29,7 +30,15 @@ export class ApiError extends Error {
   }
 }
 
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
 function isRecoverableError(error: unknown): boolean {
+  if (isAbortError(error)) {
+    return false;
+  }
+
   if (error instanceof ApiNotFoundError) {
     return false;
   }
@@ -69,12 +78,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
 async function fetchWithRetry<T>(url: string, options: FetchOptions = {}): Promise<T> {
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
   const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+  const { signal } = options;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url);
+      const response = signal ? await fetch(url, { signal }) : await fetch(url);
       return await handleResponse<T>(response);
     } catch (error) {
+      if (isAbortError(error)) {
+        throw error;
+      }
+
       const isLastAttempt = attempt === maxRetries;
 
       if (isLastAttempt || !isRecoverableError(error)) {

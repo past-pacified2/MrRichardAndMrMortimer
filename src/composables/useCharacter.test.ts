@@ -1,6 +1,7 @@
 import type { Character } from '@/types/api';
 import { flushPromises } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ref } from 'vue';
 import { ApiError, ApiNotFoundError } from '@/api/rickandmorty';
 import { renderComposable } from './test/renderComposable';
 import { parseCharacterId, useCharacter } from './useCharacter';
@@ -60,7 +61,7 @@ describe('useCharacter', () => {
 
     await flushPromises();
 
-    expect(fetchCharacter).toHaveBeenCalledWith(1);
+    expect(fetchCharacter).toHaveBeenCalledWith(1, { signal: expect.any(AbortSignal) });
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharacter);
   });
@@ -73,7 +74,7 @@ describe('useCharacter', () => {
 
     await flushPromises();
 
-    expect(fetchCharacter).toHaveBeenCalledWith(99999);
+    expect(fetchCharacter).toHaveBeenCalledWith(99999, { signal: expect.any(AbortSignal) });
     expect(result.isError.value).toBe(true);
     expect(result.error.value).toBe(notFoundError);
   });
@@ -106,5 +107,29 @@ describe('useCharacter', () => {
     expect(fetchCharacter).toHaveBeenCalledTimes(2);
     expect(result.isSuccess.value).toBe(true);
     expect(result.data.value).toEqual(mockCharacter);
+  });
+
+  it('aborts the previous request when the character id changes', async () => {
+    const signals: AbortSignal[] = [];
+
+    vi.mocked(fetchCharacter).mockImplementation((_id, options) => {
+      if (options?.signal) {
+        signals.push(options.signal);
+      }
+
+      return new Promise(() => {});
+    });
+
+    const characterId = ref<number | null>(1);
+    renderComposable(() => useCharacter(characterId));
+
+    await flushPromises();
+
+    characterId.value = 2;
+    await flushPromises();
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0]?.aborted).toBe(true);
+    expect(signals[1]?.aborted).toBe(false);
   });
 });

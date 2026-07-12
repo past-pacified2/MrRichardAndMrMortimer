@@ -151,6 +151,48 @@ describe('fetchCharacters', () => {
       message: 'Server error',
     });
   });
+
+  it('passes the abort signal to fetch', async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(mockFetchResponse(mockCharactersResponse));
+
+    await fetchCharacters(1, { ...noRetry, signal: controller.signal });
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API_BASE_URL}/character`, { signal: controller.signal });
+  });
+
+  it('aborts an in-flight request when the signal is cancelled', async () => {
+    const controller = new AbortController();
+    vi.spyOn(globalThis, 'fetch').mockImplementation((_url, init) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted.', 'AbortError'));
+        });
+      });
+    });
+
+    const request = fetchCharacters(1, { ...noRetry, signal: controller.signal });
+    controller.abort();
+
+    await expect(request).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('does not retry aborted requests', async () => {
+    const controller = new AbortController();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation((_url, init) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted.', 'AbortError'));
+        });
+      });
+    });
+
+    const request = fetchCharacters(1, { maxRetries: 2, retryDelayMs: 0, signal: controller.signal });
+    controller.abort();
+
+    await expect(request).rejects.toMatchObject({ name: 'AbortError' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('fetchCharacter', () => {
